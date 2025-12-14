@@ -16,23 +16,23 @@ jobs:
         include:
           - os: Linux
             runner: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            artifact_name: weather-assistant-linux-x86_64
+            target: x86_64-unknown-linux-gnu
+            artifact: weather-assistant-linux-x86_64
 
           - os: Windows
             runner: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: weather-assistant-windows-x86_64.exe
+            artifact: weather-assistant-windows-x86_64.exe
 
           - os: macOS (Intel)
             runner: macos-latest
             target: x86_64-apple-darwin
-            artifact_name: weather-assistant-macos-x86_64
+            artifact: weather-assistant-macos-x86_64
 
           - os: macOS (Apple Silicon)
             runner: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: weather-assistant-macos-aarch64
+            artifact: weather-assistant-macos-aarch64
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -44,11 +44,11 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-      - name: Install Linux dependencies (musl)
-        if: matrix.target == 'x86_64-unknown-linux-musl'
+      - name: Install Linux dependencies
+        if: matrix.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y musl-tools libssl-dev
+          sudo apt-get install -y pkg-config libssl-dev
 
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
