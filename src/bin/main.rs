@@ -1,10 +1,19 @@
+use clap::Parser;
 use ollama_rs::{
     Ollama,
     generation::chat::{ChatMessage, request::ChatMessageRequest},
     models::ModelOptions,
 };
-use std::io::Write;
 use weather_assistant::tools::GetWeather;
+
+// Simply weather assistant
+#[derive(Parser, Debug)]
+#[command(version, long_about = None)]
+struct Args {
+    /// Ollama model name (must support tool calling)
+    #[arg(short, long)]
+    model_name: String,
+}
 
 const SYSTEM: &str = r#"
 You are helpful weather assistant.
@@ -22,34 +31,38 @@ Rules you must follow strictly:
 Never break these rules.
 "#;
 
-fn input() -> String {
-    let mut s = String::new();
-    let _ = std::io::stdin().read_line(&mut s);
-    s.trim().to_string()
+macro_rules! input {
+    () => {
+        input!("")
+    };
+    ($prompt:expr) => {{
+        use std::io::{self, Write};
+        if !$prompt.is_empty() {
+            print!("{}", $prompt);
+            let _ = io::stdout().flush();
+        }
+        let mut s = String::new();
+        io::stdin().read_line(&mut s).unwrap();
+        s.trim().to_string()
+    }};
 }
 
 #[tokio::main]
 async fn main() -> ollama_rs::error::Result<()> {
-    dotenv::dotenv().ok();
+    let args = Args::parse();
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
-    let model = std::env::var("OLLAMA_MODEL")
-        .inspect_err(|_| tracing::error!("missing environment variable \"OLLAMA_MODEL\""))
-        .unwrap();
     let ollama = Ollama::default();
-    let mut stdout = std::io::stdout();
     let mut get_weather = GetWeather::new();
     loop {
-        print!("👨 >> ");
-        stdout.flush().unwrap();
         let response = ollama
             .send_chat_messages(
                 ChatMessageRequest::new(
-                    model.clone(),
+                    args.model_name.clone(),
                     vec![
                         ChatMessage::system(SYSTEM.to_string()),
-                        ChatMessage::user(input()),
+                        ChatMessage::user(input!(">> ")),
                     ],
                 )
                 .options(
@@ -66,7 +79,7 @@ async fn main() -> ollama_rs::error::Result<()> {
                 match call.function.name.as_str() {
                     "get_weather" => {
                         println!(
-                            "🤖 >> {}",
+                            "🤖 \x1b[1;94m{}\x1b[0m",
                             get_weather
                                 .call_from_json(call.function.arguments)
                                 .await
@@ -77,7 +90,7 @@ async fn main() -> ollama_rs::error::Result<()> {
                 }
             }
         } else {
-            println!("🤖 >> {}", response.message.content);
+            println!("🤖 \x1b[1;94m{}\x1b[0m", response.message.content);
         }
     }
 }
