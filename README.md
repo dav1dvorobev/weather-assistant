@@ -4,19 +4,26 @@
 
 # Быстрый старт
 
-1. Запустите Ollama (если не установлено/не запущено):
+1. Запустите Ollama (если не установлено/не запущено)
 
 ```bash
 docker compose up -d
 ```
 
-2. Подтяните модель (пример):
+2. Подтяните модель (пример)
 
 ```bash
 docker exec -it ollama ollama pull qwen2.5:1.5b
 ```
 > [!IMPORTANT]
 > Модель должна поддерживать вызов инструментов. [Список моделей](https://ollama.com/search?c=tools) и [описание поддержки вызова инструментов](https://docs.ollama.com/capabilities/tool-calling).
+
+3. Запустите клиента
+
+```bash
+chmod +x ./weather-assistant 
+./weather-assistant -m qwen2.5:1.5b
+```
 
 # Пример интерактивного запроса
 
