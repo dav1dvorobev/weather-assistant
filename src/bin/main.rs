@@ -1,6 +1,7 @@
 use ollama_rs::{
     Ollama,
     generation::chat::{ChatMessage, request::ChatMessageRequest},
+    models::ModelOptions,
 };
 use std::io::Write;
 use weather_assistant::tools::GetWeather;
@@ -50,6 +51,12 @@ async fn main() -> ollama_rs::error::Result<()> {
                         ChatMessage::system(SYSTEM.to_string()),
                         ChatMessage::user(input()),
                     ],
+                )
+                .options(
+                    ModelOptions::default()
+                        .num_ctx(2048)
+                        .temperature(0.2)
+                        .num_predict(256),
                 )
                 .tools(vec![GetWeather::tool_info()]),
             )
