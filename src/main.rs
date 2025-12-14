@@ -1,12 +1,14 @@
+mod tools;
+
 use clap::Parser;
 use ollama_rs::{
     Ollama,
     generation::chat::{ChatMessage, request::ChatMessageRequest},
     models::ModelOptions,
 };
-use weather_assistant::tools::GetWeather;
+use tools::GetWeather;
 
-// Simply weather assistant
+/// Simply weather assistant client for Ollama
 #[derive(Parser, Debug)]
 #[command(version, long_about = None)]
 struct Args {

@@ -72,7 +72,7 @@ impl Tool for GetWeather {
     }
 
     fn description() -> &'static str {
-        " Retrieves current weather for the given location."
+        "Retrieves current weather for the given location."
     }
 
     async fn call(
